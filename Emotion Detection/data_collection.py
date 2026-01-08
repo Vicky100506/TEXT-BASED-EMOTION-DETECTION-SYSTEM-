@@ -1,24 +1,4 @@
-"""
-Data Collection Script for Emotion Detection Project
 
-Emotions (target set):
-joy, sadness, anger, fear, surprise, disgust, neutral, love, confusion, sarcasm
-
-This script does:
-1. Create folder structure
-2. Download existing datasets from Hugging Face:
-   - GoEmotions
-   - TweetEval (emotion)
-   - TweetEval (irony/sarcasm)
-3. Build separate labeled datasets (no web scraping!) for:
-   - confusion  -> from GoEmotions
-   - sarcasm    -> from TweetEval (irony)
-4. Save them as CSVs under data/raw/confusion and data/raw/sarcasm
-5. Combine all CSVs into one big 'all_raw_combined.csv'
-
-NOTE:
-- You need: `pip install datasets pandas`
-"""
 
 import os
 import glob
@@ -28,9 +8,6 @@ import pandas as pd
 from datasets import load_dataset
 
 
-# --------------------------
-# 1. FOLDER SETUP
-# --------------------------
 
 BASE_DIR = Path(".")
 DATA_DIR = BASE_DIR / "data"
@@ -59,9 +36,6 @@ def make_dirs():
     print("[INFO] Directory structure created.")
 
 
-# --------------------------
-# 2. DOWNLOAD EXISTING DATASETS
-# --------------------------
 
 def download_goemotions():
     """
@@ -106,10 +80,6 @@ def download_tweeteval_irony():
         print(f"[OK] Saved TweetEval irony {split} -> {out_path}")
 
 
-# --------------------------
-# 3. BUILD CONFUSION & SARCASM DATASETS (NO WEB SCRAPING)
-# --------------------------
-
 def build_confusion_dataset(target_size: int = 2000):
     """
     Build a confusion dataset from GoEmotions:
@@ -147,7 +117,6 @@ def build_confusion_dataset(target_size: int = 2000):
 
     df = pd.DataFrame(records)
 
-    # Shuffle and downsample to desired size
     df = df.sample(frac=1.0, random_state=42).reset_index(drop=True)
     if len(df) > target_size:
         df = df.sample(n=target_size, random_state=42).reset_index(drop=True)
@@ -171,7 +140,6 @@ def build_sarcasm_dataset(target_size: int = 2000):
     records = []
     for split in ds.keys():
         for ex in ds[split]:
-            # label: 0 = non-ironic, 1 = ironic
             if ex["label"] == 1:
                 records.append(
                     {
@@ -187,7 +155,6 @@ def build_sarcasm_dataset(target_size: int = 2000):
 
     df = pd.DataFrame(records)
 
-    # Shuffle and downsample to desired size
     df = df.sample(frac=1.0, random_state=42).reset_index(drop=True)
     if len(df) > target_size:
         df = df.sample(n=target_size, random_state=42).reset_index(drop=True)
@@ -196,10 +163,6 @@ def build_sarcasm_dataset(target_size: int = 2000):
     df.to_csv(out_path, index=False)
     print(f"[OK] Sarcasm dataset saved -> {out_path} (rows: {len(df)})")
 
-
-# --------------------------
-# 4. COMBINE ALL CSVs INTO ONE
-# --------------------------
 
 def combine_all_raw_csvs():
     """
@@ -234,23 +197,18 @@ def combine_all_raw_csvs():
     print(f"[INFO] Combined shape: {combined.shape}")
 
 
-# --------------------------
-# MAIN PIPELINE
-# --------------------------
-
 def main():
     make_dirs()
 
-    # 1) Download public datasets
+
     download_goemotions()
     download_tweeteval_emotion()
     download_tweeteval_irony()
 
-    # 2) Build confusion & sarcasm datasets (no web scraping)
-    build_confusion_dataset(target_size=2000)  # change to 1000 if you want smaller
+    build_confusion_dataset(target_size=2000)  
     build_sarcasm_dataset(target_size=2000)
 
-    # 3) Combine everything
+
     combine_all_raw_csvs()
 
     print("\n[DONE] Step 2: Data collection completed.")
