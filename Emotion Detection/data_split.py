@@ -1,14 +1,4 @@
-"""
-STEP 4: Split cleaned dataset into train / val / test
 
-Input:
-    data/processed/cleaned_multilabel_dataset.csv
-
-Output:
-    data/processed/train.csv
-    data/processed/val.csv
-    data/processed/test.csv
-"""
 
 import pandas as pd
 from pathlib import Path
@@ -26,10 +16,10 @@ def main():
     df = pd.read_csv(INPUT_FILE)
     print("[INFO] Shape:", df.shape)
 
-    # optional: shuffle
+
     df = df.sample(frac=1.0, random_state=42).reset_index(drop=True)
 
-    # 80% train, 10% val, 10% test
+
     train_df, temp_df = train_test_split(
         df,
         test_size=0.2,
