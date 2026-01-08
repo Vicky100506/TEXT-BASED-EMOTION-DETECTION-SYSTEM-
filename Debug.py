@@ -1,10 +1,10 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-# 🔹 Path to your trained model
+
 MODEL_DIR = "models/bert_multilabel_emotions/final_10labels"
 
-# 🔹 Load tokenizer and model
+
 tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
 model.eval()
