@@ -1,6 +1,4 @@
-# =========================================================
-# 📦 IMPORTS
-# =========================================================
+
 import ast
 import random
 from pathlib import Path
@@ -20,10 +18,6 @@ from transformers import (
 )
 from sklearn.metrics import precision_recall_fscore_support
 
-
-# =========================================================
-# 🔹 EMOTION MAPPING
-# =========================================================
 EMOTION2ID = {
     "joy": 0, "sadness": 1, "anger": 2, "fear": 3, "love": 4,
     "surprise": 5, "sarcasm": 6, "disgust": 7, "confusion": 8, "neutral": 9
@@ -32,10 +26,6 @@ EMOTION2ID = {
 ID2EMOTION = {v: k for k, v in EMOTION2ID.items()}
 NUM_LABELS = len(EMOTION2ID)
 
-
-# =========================================================
-# ⚙️ CONFIG
-# =========================================================
 MAX_LENGTH = 128          # 🔥 faster on CPU
 BATCH_SIZE = 16           # 🔥 accelerate handles batching
 EPOCHS = 3
@@ -47,29 +37,17 @@ random.seed(SEED)
 np.random.seed(SEED)
 torch.manual_seed(SEED)
 
-
-# =========================================================
-# 📁 PROJECT ROOT
-# =========================================================
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "processed"
 
 TRAIN_CSV = DATA_DIR / "train.csv"
 VAL_CSV = DATA_DIR / "val.csv"
 
-
-# =========================================================
-# 📄 LOAD DATA
-# =========================================================
 train_df = pd.read_csv(TRAIN_CSV)
 val_df = pd.read_csv(VAL_CSV)
 
 TEXT_COL = next(c for c in ["clean_text", "text"] if c in train_df.columns)
 
-
-# =========================================================
-# 🔁 LABEL ENCODING
-# =========================================================
 def to_multi_hot(raw):
     vec = [0.0] * NUM_LABELS
 
@@ -93,10 +71,6 @@ def build_dataset(df):
 train_ds = build_dataset(train_df)
 val_ds = build_dataset(val_df)
 
-
-# =========================================================
-# 🔤 TOKENIZATION
-# =========================================================
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 
 def tokenize(batch):
@@ -114,9 +88,6 @@ train_ds.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
 val_ds.set_format("torch", columns=["input_ids", "attention_mask", "labels"])
 
 
-# =========================================================
-# 🤖 MODEL
-# =========================================================
 config = AutoConfig.from_pretrained(
     "bert-base-uncased",
     num_labels=NUM_LABELS,
@@ -131,9 +102,6 @@ model = AutoModelForSequenceClassification.from_pretrained(
 )
 
 
-# =========================================================
-# 📈 METRICS
-# =========================================================
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     probs = torch.sigmoid(torch.tensor(logits))
@@ -146,9 +114,6 @@ def compute_metrics(eval_pred):
     return {"f1_micro": f1_micro}
 
 
-# =========================================================
-# 🚀 TRAINING (ACCELERATE BACKEND)
-# =========================================================
 training_args = TrainingArguments(
     output_dir="models/bert_multilabel_accelerate",
     eval_strategy="epoch",
