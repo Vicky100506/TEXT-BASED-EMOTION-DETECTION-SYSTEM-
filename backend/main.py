@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
-from prediction import predict   # ✅ THIS is the connection
+from prediction import predict  
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -21,7 +21,7 @@ def home(request: Request):
 
 @app.post("/", response_class=HTMLResponse)
 def analyze(request: Request, text: str = Form(...)):
-    emotions = predict(text)   # 🔥 prediction.py runs HERE
+    emotions = predict(text) 
 
     return templates.TemplateResponse(
         "index.html",
